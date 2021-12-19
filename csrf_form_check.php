@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+// debug check
 if (isset($_POST['name']) && $_POST['name']!=false ) {
     echo "Name: ".$_POST['name'] . '<br />';
 }
@@ -11,15 +12,16 @@ if (isset($_POST['name']) && $_POST['name']!=false && !isset($_POST['csrf_token'
     echo "ATTACKER! 2<br />";
 }
 
+// form success check
 if (isset($_POST['csrf_token']) && $_POST['csrf_token']===$_SESSION['csrf_token']) {
     $max_time = 60*60*24; // 1 day
     if(isset($_SESSION['csrf_token_time'])) {
         $token_time = $_SESSION['csrf_token_time'];
-    }
-    if ($max_time + $_SESSION['csrf_token_time'] >=time()) {
-        echo "success";
-    } else {
-        echo "timeout";
+        if ($max_time + $_SESSION['csrf_token_time'] >= time()) {
+            echo "success";
+        } else {
+            echo "timeout";
+        }
     }
 }
 $token = md5(uniqid(rand(),true));
