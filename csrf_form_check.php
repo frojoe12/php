@@ -1,12 +1,10 @@
 <?php
 session_start();
-
+$errors = [];
 // debug check
-if (isset($_POST['name']) && $_POST['name']!=false ) {
-    echo "Name: ".$_POST['name'] . '<br />';
-}
+
 if (isset($_POST['csrf_token']) && $_POST['csrf_token']!==$_SESSION['csrf_token']) {
-    echo "ATTACKER! 1<br />";
+    $errors[]='Invalid CSRF token.';
 }
 if (isset($_POST['name']) && $_POST['name']!=false && !isset($_POST['csrf_token'])) {
     echo "ATTACKER! 2<br />";
@@ -14,13 +12,12 @@ if (isset($_POST['name']) && $_POST['name']!=false && !isset($_POST['csrf_token'
 
 // form success check
 if (isset($_POST['csrf_token']) && $_POST['csrf_token']===$_SESSION['csrf_token']) {
-    $max_time = 60*60*24; // 1 day
+    $max_time = 60*60; // 1 hour
     if(isset($_SESSION['csrf_token_time'])) {
-        $token_time = $_SESSION['csrf_token_time'];
-        if ($max_time + $_SESSION['csrf_token_time'] >= time()) {
+        if ($max_time + $_SESSION['csrf_token_time'] >=time()) {
             echo "success";
         } else {
-            echo "timeout";
+            $errors[]='Expired CSRF token.';
         }
     }
 }
@@ -28,8 +25,11 @@ $token = md5(uniqid(rand(),true));
 $_SESSION['csrf_token'] = $token;
 $_SESSION['csrf_token_time'] = time();
 
-echo $_SESSION['csrf_token'];
-
+if (count($errors)>0) {
+    foreach ($errors as $error) {
+        echo "<p class='error'>".$error."</p>";
+    }
+}
 ?>
 <form action="" method="post">
     Name:
